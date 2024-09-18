@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JoJo's Bizarre Adventure Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #events {
+            margin-top: 20px;
+            border: 1px solid #000;
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+        }
+        #characters {
+            margin: 10px;
+        }
+        .character {
+            margin: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .character img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .character button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>JoJo's Bizarre Adventure Simulator</h1>
+    <div>
+        <h2>Add Characters</h2>
+        <input type="text" id="charName" placeholder="Character Name">
+        <input type="text" id="charImg" placeholder="Image URL">
+        <button onclick="addCharacter()">Add Character</button>
+        <div id="characters"></div>
+    </div>
+
+    <div>
+        <button onclick="startSimulation()">Start Simulation</button>
+    </div>
+
+    <div id="events">
+        <h3>Simulation Events</h3>
+        <div id="eventLog"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
