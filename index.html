@@ -56,7 +56,7 @@
             const charImg = imgPreview.src || 'https://via.placeholder.com/100';
 
             if (charName) {
-                const newCharacter = { name: charName, health: 100, image: charImg, dead: false };
+                const newCharacter = { name: charName, health: 100, image: charImg, dead: false, kills: 0, collectedItems: [], emotions: [] };
                 characters.push(newCharacter);
                 localStorage.setItem('characters', JSON.stringify(characters));
                 displayCharacters();
@@ -125,7 +125,8 @@
                 alert("Add at least 2 characters for the simulation.");
                 return;
             }
-            window.location.href = 'simulation.html'; // Redirect to simulation page
+            localStorage.setItem('characters', JSON.stringify(characters));
+            window.location.href = 'round1.html'; // Correct redirection to the first round page
         }
     </script>
 </body>
