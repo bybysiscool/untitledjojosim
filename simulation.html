@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JoJo's Bizarre Adventure Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>JoJo's Bizarre Adventure Simulation</h1>
+    <div class="container">
+        <div id="eventLog">
+            <h3>Event Log</h3>
+        </div>
+        <button class="next-button" onclick="showNextEvent()">Next</button>
+        <button id="restartButton" class="hidden" onclick="restartSimulation()">Restart Simulation</button>
+    </div>
+
+    <script>
+        let characters = JSON.parse(localStorage.getItem('characters')) || [];
+        let eventLog = document.getElementById('eventLog');
+        let currentEventIndex = 0;
+        let events = [];
+        let simulationActive = true;
+
+        // Shuffle array
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Simulate events
+        function simulateEvents() {
+            shuffle(characters);
+            for (let i = 0; i < characters.length; i += 2) {
+                if (characters[i + 1]) {
+                    events.push(`${characters[i].name} encounters ${characters[i + 1].name}!`);
+                    let winner = Math.random() > 0.5 ? characters[i] : characters[i + 1];
+                    let loser = winner === characters[i] ? characters[i + 1] : characters[i];
+                    events.push(`${winner.name} wins the encounter!`);
+                    loser.dead = true;
+                }
+            }
+            characters = characters.filter(character => !character.dead);
+            if (characters.length > 1) {
+                events.push("Next Round...");
+                simulateEvents();
+            } else {
+                events.push(`${characters[0].name} is the last one standing!`);
+                simulationActive = false;
+            }
+        }
+
+        // Display the next event
+        function showNextEvent() {
+            if (currentEventIndex < events.length) {
+                eventLog.innerHTML += `<p>${events[currentEventIndex]}</p>`;
+                currentEventIndex++;
+                if (currentEventIndex === events.length) {
+                    endSimulation();
+                }
+            }
+        }
+
+        // End the simulation
+        function endSimulation() {
+            simulationActive = false;
+            localStorage.setItem('characters', JSON.stringify(characters));
+            document.getElementById('restartButton').classList.remove('hidden');
+            document.querySelector('.next-button').classList.add('hidden');
+        }
+
+        // Restart the simulation
+        function restartSimulation() {
+            localStorage.removeItem('characters');
+            window.location.href = 'index.html';
+        }
+
+        // Initialize simulation
+        simulateEvents();
+        showNextEvent();
+    </script>
+</body>
+</html>
