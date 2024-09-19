@@ -64,6 +64,9 @@
         .hidden {
             display: none;
         }
+        .action-buttons {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -101,9 +104,8 @@
             <button onclick="makeDecision('Run')">Run</button>
         </div>
 
-        <div>
+        <div id="eventLog">
             <h3>Event Log</h3>
-            <div id="eventLog"></div>
         </div>
 
         <div>
@@ -118,6 +120,9 @@
         let characters = [];
         let mainCharacter = null;
         let simulationActive = false;
+        let eventLog = document.getElementById('eventLog');
+        let currentEventIndex = 0;
+        let events = [];
 
         // Image preview before adding the character
         function previewImage(event) {
@@ -237,8 +242,9 @@
                 document.getElementById('decisionSection').classList.remove('hidden');
             }
 
-            let eventLog = document.getElementById('eventLog');
             eventLog.innerHTML = '';
+            events = [];
+            currentEventIndex = 0;
 
             // Random characters for event
             let char1 = characters[Math.floor(Math.random() * characters.length)];
@@ -247,21 +253,49 @@
                 char2 = characters[Math.floor(Math.random() * characters.length)];
             }
 
-            eventLog.innerHTML += `<p>${char1.name} encounters ${char2.name}!</p>`;
+            events.push(`${char1.name} encounters ${char2.name}!`);
             if (mainCharacter) {
-                eventLog.innerHTML += `<p>${mainCharacter.name} is watching the fight! What will they do?</p>`;
+                events.push(`${mainCharacter.name} is watching the fight! What will they do?`);
             }
 
+            showNextEvent();
             simulationActive = true;
+        }
+
+        // Display the next event
+        function showNextEvent() {
+            if (currentEventIndex < events.length) {
+                eventLog.innerHTML += `<p>${events[currentEventIndex]}</p>`;
+                if (events[currentEventIndex].includes('What will they do?')) {
+                    document.getElementById('decisionSection').classList.remove('hidden');
+                } else {
+                    document.getElementById('decisionSection').classList.add('hidden');
+                }
+                currentEventIndex++;
+            } else {
+                endSimulation();
+            }
         }
 
         // Decision-making for main character
         function makeDecision(action) {
-            let eventLog = document.getElementById('eventLog');
-            eventLog.innerHTML += `<p>${mainCharacter.name} decides to ${action}!</p>`;
-
-            // End simulation after decision
-            endSimulation();
+            if (mainCharacter) {
+                let outcome = '';
+                switch (action) {
+                    case 'Attack':
+                        outcome = `${mainCharacter.name} attacks!`;
+                        break;
+                    case 'Defend':
+                        outcome = `${mainCharacter.name} defends!`;
+                        break;
+                    case 'Run':
+                        outcome = `${mainCharacter.name} runs away!`;
+                        break;
+                }
+                events.push(outcome);
+                document.getElementById('decisionSection').classList.add('hidden');
+                showNextEvent();
+            }
         }
 
         // End the simulation
@@ -269,7 +303,6 @@
             simulationActive = false;
             document.getElementById('startButton').disabled = false;
             document.getElementById('restartButton').classList.remove('hidden');
-            document.getElementById('decisionSection').classList.add('hidden');
         }
 
         // Restart the simulation
@@ -277,6 +310,10 @@
             document.getElementById('eventLog').innerHTML = '';
             document.getElementById('restartButton').classList.add('hidden');
             document.getElementById('startButton').disabled = false;
+            characters = [];
+            displayCharacters();
+            updateMainCharacterSelect();
+            resetForm();
         }
     </script>
 
