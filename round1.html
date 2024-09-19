@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Round 1 - JoJo's Bizarre Adventure Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>JoJo's Bizarre Adventure Simulation - Round 1</h1>
+    <div class="container">
+        <div id="eventLog">
+            <h3>Event Log</h3>
+        </div>
+        <button class="next-button" onclick="showNextEvent()">Next</button>
+    </div>
+
+    <script>
+        let characters = JSON.parse(localStorage.getItem('characters')) || [];
+        let eventLog = document.getElementById('eventLog');
+        let currentEventIndex = 0;
+        let events = [];
+        let round = 1;
+
+        // Simulate events for the round
+        function simulateEvents() {
+            let shuffled = characters.slice();
+            for (let i = 0; i < shuffled.length; i += 2) {
+                if (shuffled[i + 1]) {
+                    events.push(`${shuffled[i].name} and ${shuffled[i + 1].name} face off!`);
+                    let outcome = Math.random();
+                    let winner, loser;
+                    if (outcome > 0.5) {
+                        winner = shuffled[i];
+                        loser = shuffled[i + 1];
+                        events.push(`${winner.name} wins the encounter!`);
+                        loser.dead = true;
+                        winner.kills = (winner.kills || 0) + 1;
+                    } else {
+                        winner = shuffled[i + 1];
+                        loser = shuffled[i];
+                        events.push(`${winner.name} wins the encounter!`);
+                        loser.dead = true;
+                        winner.kills = (winner.kills || 0) + 1;
+                    }
+
+                    // Random natural death
+                    if (Math.random() < 0.1) {
+                        loser.dead = true;
+                        events.push(`${loser.name} suffocates due to lack of oxygen!`);
+                    }
+
+                    // Update emotions
+                    winner.emotions.push("Triumphant");
+                    loser.emotions.push("Defeated");
+                }
+            }
+
+            characters = characters.filter(character => !character.dead);
+            if (characters.length <= 1) {
+                events.push(`${characters[0].name} is the last one standing!`);
+                localStorage.setItem('characters', JSON.stringify(characters));
+                window.location.href = `results.html?round=${round}`; // Redirect to results page
+            } else {
+                localStorage.setItem('characters', JSON.stringify(characters));
+                window.location.href = `round${round + 1}.html`; // Redirect to next round page
+            }
+        }
+
+        // Display the next event
+        function showNextEvent() {
+            if (currentEventIndex < events.length) {
+                eventLog.innerHTML += `<p>${events[currentEventIndex]}</p>`;
+                currentEventIndex++;
+            }
+            if (currentEventIndex === events.length) {
+                simulateEvents();
+            }
+        }
+
+        // Initialize round
+        simulateEvents();
+        showNextEvent();
+    </script>
+</body>
+</html>
