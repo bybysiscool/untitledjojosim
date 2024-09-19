@@ -7,52 +7,226 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
             text-align: center;
+            margin: 0;
+            padding: 0;
         }
-        #events {
-            margin-top: 20px;
-            border: 1px solid #000;
+        h1 {
+            background-color: #444;
+            color: #fff;
+            padding: 20px 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input, button, select {
             padding: 10px;
-            height: 400px;
-            overflow-y: scroll;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
         }
-        #characters {
-            margin: 10px;
+        input[type="file"] {
+            border: none;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         .character {
-            margin: 5px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
         .character img {
             width: 50px;
             height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
             margin-right: 10px;
         }
-        .character button {
-            margin-left: 10px;
+        #eventLog {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
+
     <h1>JoJo's Bizarre Adventure Simulator</h1>
-    <div>
-        <h2>Add Characters</h2>
-        <input type="text" id="charName" placeholder="Character Name">
-        <input type="text" id="charImg" placeholder="Image URL">
-        <button onclick="addCharacter()">Add Character</button>
-        <div id="characters"></div>
-    </div>
+    <div class="container">
 
-    <div>
+        <div>
+            <h3>Add Character</h3>
+            <input type="text" id="charName" placeholder="Character Name" required>
+            <input type="file" id="charImg" accept="image/*" onchange="previewImage(event)">
+            <img id="imgPreview" src="" alt="" style="display:none; width: 100px; height: 100px;">
+            <button onclick="addCharacter()">Add Character</button>
+        </div>
+
+        <div>
+            <h3>Characters</h3>
+            <div id="characters"></div>
+        </div>
+
+        <div>
+            <h3>Main Character</h3>
+            <select id="mainCharacterSelect"></select>
+        </div>
+
         <button onclick="startSimulation()">Start Simulation</button>
+
+        <div>
+            <h3>Event Log</h3>
+            <div id="eventLog"></div>
+        </div>
+
+        <div>
+            <h3>Import/Export Characters</h3>
+            <button onclick="exportCharacters()">Export Characters</button>
+            <input type="file" id="importFile" accept=".json" onchange="importCharacters(event)">
+        </div>
+
     </div>
 
-    <div id="events">
-        <h3>Simulation Events</h3>
-        <div id="eventLog"></div>
-    </div>
+    <script>
+        let characters = [];
 
-    <script src="script.js"></script>
+        // Image preview before adding the character
+        function previewImage(event) {
+            const imgPreview = document.getElementById('imgPreview');
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    imgPreview.src = reader.result;
+                    imgPreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Add a character with an image, health, and status
+        function addCharacter() {
+            let charName = document.getElementById('charName').value;
+            let charImg = document.getElementById('imgPreview').src || 'https://via.placeholder.com/50';
+
+            if (charName) {
+                characters.push({
+                    name: charName,
+                    health: 100,
+                    stand: null,
+                    isVampire: false,
+                    image: charImg
+                });
+                displayCharacters();
+                updateMainCharacterSelect();
+                resetForm();
+            } else {
+                alert("Please enter a character name.");
+            }
+        }
+
+        // Reset form after adding a character
+        function resetForm() {
+            document.getElementById('charName').value = '';
+            document.getElementById('charImg').value = '';
+            document.getElementById('imgPreview').style.display = 'none';
+        }
+
+        // Display characters on the page
+        function displayCharacters() {
+            let charDisplay = document.getElementById('characters');
+            charDisplay.innerHTML = '';
+            characters.forEach((character, index) => {
+                charDisplay.innerHTML += `
+                    <div class="character">
+                        <img src="${character.image}" alt="${character.name}">
+                        <span>${character.name} - HP: ${character.health}</span>
+                        <button onclick="removeCharacter(${index})">Remove</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Update the select box for choosing the main character
+        function updateMainCharacterSelect() {
+            let selectBox = document.getElementById('mainCharacterSelect');
+            selectBox.innerHTML = '';
+            characters.forEach((character, index) => {
+                let option = document.createElement('option');
+                option.value = index;
+                option.textContent = character.name;
+                selectBox.appendChild(option);
+            });
+        }
+
+        // Remove a character
+        function removeCharacter(index) {
+            characters.splice(index, 1);
+            displayCharacters();
+            updateMainCharacterSelect();
+        }
+
+        // Export characters as a JSON file
+        function exportCharacters() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(characters));
+            let downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "characters.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        // Import characters from a JSON file
+        function importCharacters(event) {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let importedCharacters = JSON.parse(e.target.result);
+                characters = characters.concat(importedCharacters);
+                displayCharacters();
+                updateMainCharacterSelect();
+            };
+            reader.readAsText(file);
+        }
+
+        // Simulation (simple example)
+        function startSimulation() {
+            if (characters.length < 2) {
+                alert("Add at least 2 characters for the simulation.");
+                return;
+            }
+
+            let eventLog = document.getElementById('eventLog');
+            eventLog.innerHTML = '';
+
+            let mainCharIndex = document.getElementById('mainCharacterSelect').value;
+            let mainCharacter = characters[mainCharIndex];
+
+            let char1 = characters[Math.floor(Math.random() * characters.length)];
+            let char2 = characters[Math.floor(Math.random() * characters.length)];
+            while (char1 === char2) {
+                char2 = characters[Math.floor(Math.random() * characters.length)];
+            }
+
+            eventLog.innerHTML += `<p>${mainCharacter.name} encounters ${char1.name} and ${char2.name}!</p>`;
+            eventLog.innerHTML += `<p>What will ${mainCharacter.name} do? Attack, Run, Defend?</p>`;
+        }
+    </script>
+
 </body>
 </html>
