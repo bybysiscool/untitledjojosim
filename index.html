@@ -31,14 +31,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border: 2px solid #6a0dad;
         }
-        input, button, select {
+        input, button {
             padding: 10px;
             margin: 5px;
             border-radius: 4px;
             border: 1px solid #6a0dad;
-        }
-        input[type="file"] {
-            border: none;
         }
         button {
             background-color: #6a0dad;
@@ -69,9 +66,6 @@
         .hidden {
             display: none;
         }
-        .action-buttons {
-            margin-top: 10px;
-        }
         .next-button {
             background-color: #ff007f;
             color: white;
@@ -99,22 +93,8 @@
             <div id="characters"></div>
         </div>
 
-        <div>
-            <h3>Main Character (Optional)</h3>
-            <select id="mainCharacterSelect">
-                <option value="">No Main Character</option>
-            </select>
-        </div>
-
         <button id="startButton" onclick="startSimulation()">Start Simulation</button>
         <button id="restartButton" class="hidden" onclick="restartSimulation()">Restart Simulation</button>
-
-        <div id="decisionSection" class="hidden">
-            <h3>What will your main character do?</h3>
-            <button onclick="makeDecision('Attack')">Attack</button>
-            <button onclick="makeDecision('Defend')">Defend</button>
-            <button onclick="makeDecision('Run')">Run</button>
-        </div>
 
         <div id="eventLog">
             <h3>Event Log</h3>
@@ -130,7 +110,6 @@
 
     <script>
         let characters = [];
-        let mainCharacter = null;
         let simulationActive = false;
         let eventLog = document.getElementById('eventLog');
         let currentEventIndex = 0;
@@ -150,7 +129,7 @@
             }
         }
 
-        // Add a character with an image, health, and status
+        // Add a character with an image
         function addCharacter() {
             let charName = document.getElementById('charName').value;
             let charImg = document.getElementById('imgPreview').src || 'https://via.placeholder.com/50';
@@ -164,7 +143,6 @@
                     image: charImg
                 });
                 displayCharacters();
-                updateMainCharacterSelect();
                 resetForm();
             } else {
                 alert("Please enter a character name.");
@@ -193,23 +171,10 @@
             });
         }
 
-        // Update the select box for choosing the main character
-        function updateMainCharacterSelect() {
-            let selectBox = document.getElementById('mainCharacterSelect');
-            selectBox.innerHTML = '<option value="">No Main Character</option>';
-            characters.forEach((character, index) => {
-                let option = document.createElement('option');
-                option.value = index;
-                option.textContent = character.name;
-                selectBox.appendChild(option);
-            });
-        }
-
         // Remove a character
         function removeCharacter(index) {
             characters.splice(index, 1);
             displayCharacters();
-            updateMainCharacterSelect();
         }
 
         // Export characters as a JSON file
@@ -231,12 +196,11 @@
                 let importedCharacters = JSON.parse(e.target.result);
                 characters = characters.concat(importedCharacters);
                 displayCharacters();
-                updateMainCharacterSelect();
             };
             reader.readAsText(file);
         }
 
-        // Simulation (with decision-making for main character)
+        // Simulation
         function startSimulation() {
             if (characters.length < 2) {
                 alert("Add at least 2 characters for the simulation.");
@@ -246,13 +210,6 @@
             // Disable start button and hide restart button initially
             document.getElementById('startButton').disabled = true;
             document.getElementById('restartButton').classList.add('hidden');
-
-            let mainCharIndex = document.getElementById('mainCharacterSelect').value;
-            mainCharacter = mainCharIndex ? characters[mainCharIndex] : null;
-
-            if (mainCharacter) {
-                document.getElementById('decisionSection').classList.remove('hidden');
-            }
 
             eventLog.innerHTML = '';
             events = [];
@@ -266,47 +223,23 @@
             }
 
             events.push(`${char1.name} encounters ${char2.name}!`);
-            if (mainCharacter) {
-                events.push(`${mainCharacter.name} is watching the fight! What will they do?`);
-            }
+            events.push(`${char1.name} has a stand arrow! They get a random stand.`);
+            events.push(`${char2.name} encounters a villain!`);
 
             showNextEvent();
             simulationActive = true;
         }
 
         // Display the next event
-        function showNextEvent
-
-() {
+        function showNextEvent() {
             if (currentEventIndex < events.length) {
                 eventLog.innerHTML += `<p>${events[currentEventIndex]}</p>`;
                 currentEventIndex++;
-                if (currentEventIndex === events.length) {
-                    document.getElementById('decisionSection').classList.add('hidden');
-                    endSimulation();
+                if (currentEventIndex < events.length) {
+                    document.getElementById('eventLog').innerHTML += '<button class="next-button" onclick="showNextEvent()">Next</button>';
                 } else {
-                    document.getElementById('eventLog').innerHTML += `<p>Event ${currentEventIndex}</p>`;
+                    endSimulation();
                 }
-            }
-        }
-
-        // Make a decision for the main character
-        function makeDecision(action) {
-            if (mainCharacter) {
-                let outcome = '';
-                switch (action) {
-                    case 'Attack':
-                        outcome = `${mainCharacter.name} attacks!`;
-                        break;
-                    case 'Defend':
-                        outcome = `${mainCharacter.name} defends!`;
-                        break;
-                    case 'Run':
-                        outcome = `${mainCharacter.name} runs away!`;
-                        break;
-                }
-                events.push(outcome);
-                showNextEvent();
             }
         }
 
@@ -324,7 +257,6 @@
             document.getElementById('startButton').disabled = false;
             characters = [];
             displayCharacters();
-            updateMainCharacterSelect();
             resetForm();
         }
     </script>
