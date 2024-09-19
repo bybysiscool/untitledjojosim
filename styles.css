@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f3f3;
+    color: #333;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+    background-color: #cfcfcf;
+    color: #6a0dad;
+    padding: 20px 0;
+    margin: 0;
+    font-size: 2em;
+    text-shadow: 2px 2px 4px #000;
+}
+.container {
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #6a0dad;
+}
+input, button {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 4px;
+    border: 1px solid #6a0dad;
+}
+button {
+    background-color: #6a0dad;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #5b0b8b;
+
+
+}
+.character {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #6a0dad;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+}
+.character img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+.character.dead {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+.hidden {
+    display: none;
+}
+.next-button {
+    background-color: #6a0dad;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.next-button:hover {
+    background-color: #5b0b8b;
+}
