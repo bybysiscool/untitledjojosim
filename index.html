@@ -61,6 +61,9 @@
         #eventLog {
             margin-top: 20px;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -82,11 +85,21 @@
         </div>
 
         <div>
-            <h3>Main Character</h3>
-            <select id="mainCharacterSelect"></select>
+            <h3>Main Character (Optional)</h3>
+            <select id="mainCharacterSelect">
+                <option value="">No Main Character</option>
+            </select>
         </div>
 
-        <button onclick="startSimulation()">Start Simulation</button>
+        <button id="startButton" onclick="startSimulation()">Start Simulation</button>
+        <button id="restartButton" class="hidden" onclick="restartSimulation()">Restart Simulation</button>
+
+        <div id="decisionSection" class="hidden">
+            <h3>What will your main character do?</h3>
+            <button onclick="makeDecision('Attack')">Attack</button>
+            <button onclick="makeDecision('Defend')">Defend</button>
+            <button onclick="makeDecision('Run')">Run</button>
+        </div>
 
         <div>
             <h3>Event Log</h3>
@@ -103,6 +116,8 @@
 
     <script>
         let characters = [];
+        let mainCharacter = null;
+        let simulationActive = false;
 
         // Image preview before adding the character
         function previewImage(event) {
@@ -164,7 +179,7 @@
         // Update the select box for choosing the main character
         function updateMainCharacterSelect() {
             let selectBox = document.getElementById('mainCharacterSelect');
-            selectBox.innerHTML = '';
+            selectBox.innerHTML = '<option value="">No Main Character</option>';
             characters.forEach((character, index) => {
                 let option = document.createElement('option');
                 option.value = index;
@@ -204,27 +219,64 @@
             reader.readAsText(file);
         }
 
-        // Simulation (simple example)
+        // Simulation (with decision-making for main character)
         function startSimulation() {
             if (characters.length < 2) {
                 alert("Add at least 2 characters for the simulation.");
                 return;
             }
 
+            // Disable start button and hide restart button initially
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('restartButton').classList.add('hidden');
+
+            let mainCharIndex = document.getElementById('mainCharacterSelect').value;
+            mainCharacter = mainCharIndex ? characters[mainCharIndex] : null;
+
+            if (mainCharacter) {
+                document.getElementById('decisionSection').classList.remove('hidden');
+            }
+
             let eventLog = document.getElementById('eventLog');
             eventLog.innerHTML = '';
 
-            let mainCharIndex = document.getElementById('mainCharacterSelect').value;
-            let mainCharacter = characters[mainCharIndex];
-
+            // Random characters for event
             let char1 = characters[Math.floor(Math.random() * characters.length)];
             let char2 = characters[Math.floor(Math.random() * characters.length)];
             while (char1 === char2) {
                 char2 = characters[Math.floor(Math.random() * characters.length)];
             }
 
-            eventLog.innerHTML += `<p>${mainCharacter.name} encounters ${char1.name} and ${char2.name}!</p>`;
-            eventLog.innerHTML += `<p>What will ${mainCharacter.name} do? Attack, Run, Defend?</p>`;
+            eventLog.innerHTML += `<p>${char1.name} encounters ${char2.name}!</p>`;
+            if (mainCharacter) {
+                eventLog.innerHTML += `<p>${mainCharacter.name} is watching the fight! What will they do?</p>`;
+            }
+
+            simulationActive = true;
+        }
+
+        // Decision-making for main character
+        function makeDecision(action) {
+            let eventLog = document.getElementById('eventLog');
+            eventLog.innerHTML += `<p>${mainCharacter.name} decides to ${action}!</p>`;
+
+            // End simulation after decision
+            endSimulation();
+        }
+
+        // End the simulation
+        function endSimulation() {
+            simulationActive = false;
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('restartButton').classList.remove('hidden');
+            document.getElementById('decisionSection').classList.add('hidden');
+        }
+
+        // Restart the simulation
+        function restartSimulation() {
+            document.getElementById('eventLog').innerHTML = '';
+            document.getElementById('restartButton').classList.add('hidden');
+            document.getElementById('startButton').disabled = false;
         }
     </script>
 
