@@ -60,7 +60,7 @@
             if (characters.length <= 1) {
                 events.push(`${characters[0].name} is the last one standing!`);
                 localStorage.setItem('characters', JSON.stringify(characters));
-                window.location.href = `results.html?round=${round}`; // Redirect to results page
+                window.location.href = `results.html`; // Redirect to results page
             } else {
                 localStorage.setItem('characters', JSON.stringify(characters));
                 window.location.href = `round${round + 1}.html`; // Redirect to next round page
