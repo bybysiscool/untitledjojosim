@@ -4,82 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JoJo's Bizarre Adventure Simulator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f3f3;
-            color: #333;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            background-color: #cfcfcf;
-            color: #6a0dad;
-            padding: 20px 0;
-            margin: 0;
-            font-size: 2em;
-            text-shadow: 2px 2px 4px #000;
-        }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border: 2px solid #6a0dad;
-        }
-        input, button {
-            padding: 10px;
-            margin: 5px;
-            border-radius: 4px;
-            border: 1px solid #6a0dad;
-        }
-        button {
-            background-color: #6a0dad;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #5b0b8b;
-        }
-        .character {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .character img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        #eventLog {
-            margin-top: 20px;
-            text-align: left;
-        }
-        .hidden {
-            display: none;
-        }
-        .next-button {
-            background-color: #ff007f;
-            color: white;
-        }
-        .next-button:hover {
-            background-color: #e6007a;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
     <h1>JoJo's Bizarre Adventure Simulator</h1>
     <div class="container">
-
         <div>
             <h3>Add Character</h3>
             <input type="text" id="charName" placeholder="Character Name" required>
@@ -94,54 +23,42 @@
         </div>
 
         <button id="startButton" onclick="startSimulation()">Start Simulation</button>
-        <button id="restartButton" class="hidden" onclick="restartSimulation()">Restart Simulation</button>
-
-        <div id="eventLog">
-            <h3>Event Log</h3>
-        </div>
-
-        <div>
-            <h3>Import/Export Characters</h3>
-            <button onclick="exportCharacters()">Export Characters</button>
-            <input type="file" id="importFile" accept=".json" onchange="importCharacters(event)">
-        </div>
-
+        <button id="exportButton" onclick="exportCharacters()">Export Characters</button>
+        <input type="file" id="importFile" accept=".json" onchange="importCharacters(event)">
     </div>
 
     <script>
-        let characters = [];
-        let simulationActive = false;
-        let eventLog = document.getElementById('eventLog');
-        let currentEventIndex = 0;
-        let events = [];
+        let characters = JSON.parse(localStorage.getItem('characters')) || [];
+        let charNameInput = document.getElementById('charName');
+        let charImgInput = document.getElementById('charImg');
+        let imgPreview = document.getElementById('imgPreview');
+        let charactersDiv = document.getElementById('characters');
 
-        // Image preview before adding the character
+        // Display characters on page load
+        displayCharacters();
+
+        // Image preview before adding character
         function previewImage(event) {
-            const imgPreview = document.getElementById('imgPreview');
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function() {
                     imgPreview.src = reader.result;
                     imgPreview.style.display = 'block';
-                }
+                };
                 reader.readAsDataURL(file);
             }
         }
 
-        // Add a character with an image
+        // Add a character
         function addCharacter() {
-            let charName = document.getElementById('charName').value;
-            let charImg = document.getElementById('imgPreview').src || 'https://via.placeholder.com/50';
+            const charName = charNameInput.value;
+            const charImg = imgPreview.src || 'https://via.placeholder.com/100';
 
             if (charName) {
-                characters.push({
-                    name: charName,
-                    health: 100,
-                    stand: null,
-                    isVampire: false,
-                    image: charImg
-                });
+                const newCharacter = { name: charName, health: 100, image: charImg, dead: false };
+                characters.push(newCharacter);
+                localStorage.setItem('characters', JSON.stringify(characters));
                 displayCharacters();
                 resetForm();
             } else {
@@ -149,20 +66,20 @@
             }
         }
 
-        // Reset form after adding a character
+        // Reset form after adding character
         function resetForm() {
-            document.getElementById('charName').value = '';
-            document.getElementById('charImg').value = '';
-            document.getElementById('imgPreview').style.display = 'none';
+            charNameInput.value = '';
+            charImgInput.value = '';
+            imgPreview.style.display = 'none';
         }
 
         // Display characters on the page
         function displayCharacters() {
-            let charDisplay = document.getElementById('characters');
-            charDisplay.innerHTML = '';
+            charactersDiv.innerHTML = '';
             characters.forEach((character, index) => {
-                charDisplay.innerHTML += `
-                    <div class="character">
+                const imgClass = character.dead ? 'dead' : '';
+                charactersDiv.innerHTML += `
+                    <div class="character ${imgClass}">
                         <img src="${character.image}" alt="${character.name}">
                         <span>${character.name} - HP: ${character.health}</span>
                         <button onclick="removeCharacter(${index})">Remove</button>
@@ -174,13 +91,14 @@
         // Remove a character
         function removeCharacter(index) {
             characters.splice(index, 1);
+            localStorage.setItem('characters', JSON.stringify(characters));
             displayCharacters();
         }
 
-        // Export characters as a JSON file
+        // Export characters
         function exportCharacters() {
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(characters));
-            let downloadAnchorNode = document.createElement('a');
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(characters));
+            const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", "characters.json");
             document.body.appendChild(downloadAnchorNode);
@@ -188,78 +106,27 @@
             downloadAnchorNode.remove();
         }
 
-        // Import characters from a JSON file
+        // Import characters
         function importCharacters(event) {
-            let file = event.target.files[0];
-            let reader = new FileReader();
+            const file = event.target.files[0];
+            const reader = new FileReader();
             reader.onload = function(e) {
-                let importedCharacters = JSON.parse(e.target.result);
-                characters = characters.concat(importedCharacters);
+                const importedCharacters = JSON.parse(e.target.result);
+                characters = importedCharacters;
+                localStorage.setItem('characters', JSON.stringify(characters));
                 displayCharacters();
             };
             reader.readAsText(file);
         }
 
-        // Simulation
+        // Start simulation
         function startSimulation() {
             if (characters.length < 2) {
                 alert("Add at least 2 characters for the simulation.");
                 return;
             }
-
-            // Disable start button and hide restart button initially
-            document.getElementById('startButton').disabled = true;
-            document.getElementById('restartButton').classList.add('hidden');
-
-            eventLog.innerHTML = '';
-            events = [];
-            currentEventIndex = 0;
-
-            // Random characters for event
-            let char1 = characters[Math.floor(Math.random() * characters.length)];
-            let char2 = characters[Math.floor(Math.random() * characters.length)];
-            while (char1 === char2) {
-                char2 = characters[Math.floor(Math.random() * characters.length)];
-            }
-
-            events.push(`${char1.name} encounters ${char2.name}!`);
-            events.push(`${char1.name} has a stand arrow! They get a random stand.`);
-            events.push(`${char2.name} encounters a villain!`);
-
-            showNextEvent();
-            simulationActive = true;
-        }
-
-        // Display the next event
-        function showNextEvent() {
-            if (currentEventIndex < events.length) {
-                eventLog.innerHTML += `<p>${events[currentEventIndex]}</p>`;
-                currentEventIndex++;
-                if (currentEventIndex < events.length) {
-                    document.getElementById('eventLog').innerHTML += '<button class="next-button" onclick="showNextEvent()">Next</button>';
-                } else {
-                    endSimulation();
-                }
-            }
-        }
-
-        // End the simulation
-        function endSimulation() {
-            simulationActive = false;
-            document.getElementById('startButton').disabled = false;
-            document.getElementById('restartButton').classList.remove('hidden');
-        }
-
-        // Restart the simulation
-        function restartSimulation() {
-            document.getElementById('eventLog').innerHTML = '';
-            document.getElementById('restartButton').classList.add('hidden');
-            document.getElementById('startButton').disabled = false;
-            characters = [];
-            displayCharacters();
-            resetForm();
+            window.location.href = 'simulation.html'; // Redirect to simulation page
         }
     </script>
-
 </body>
 </html>
