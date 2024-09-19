@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - JoJo's Bizarre Adventure Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>JoJo's Bizarre Adventure Simulation - Results</h1>
+    <div class="container">
+        <h2>Results</h2>
+        <div id="results"></div>
+        <h3>Dead Characters</h3>
+        <div id="deadCharacters"></div>
+        <button onclick="restartSimulation()">Restart Simulation</button>
+    </div>
+
+    <script>
+        let characters = JSON.parse(localStorage.getItem('characters')) || [];
+        let resultsDiv = document.getElementById('results');
+        let deadCharactersDiv = document.getElementById('deadCharacters');
+
+        function displayResults()
+
+ {
+            if (characters.length > 0) {
+                resultsDiv.innerHTML = `<p>${characters[0].name} is the winner with ${characters[0].kills} kills!</p>`;
+            } else {
+                resultsDiv.innerHTML = `<p>No winners, all characters are dead.</p>`;
+            }
+
+            characters.forEach(character => {
+                resultsDiv.innerHTML += `
+                    <div class="character">
+                        <img src="${character.image}" alt="${character.name}">
+                        <p>${character.name} - Kills: ${character.kills}</p>
+                    </div>
+                `;
+            });
+
+            // Display dead characters
+            let allCharacters = JSON.parse(localStorage.getItem('allCharacters')) || [];
+            allCharacters.forEach(character => {
+                if (character.dead) {
+                    deadCharactersDiv.innerHTML += `
+                        <div class="character dead">
+                            <img src="${character.image}" alt="${character.name}">
+                            <p>${character.name} - Dead</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function restartSimulation() {
+            localStorage.removeItem('characters');
+            window.location.href = 'index.html';
+        }
+
+        // Initialize results page
+        displayResults();
+    </script>
+</body>
+</html>
